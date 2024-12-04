@@ -26,6 +26,8 @@ from safety_gymnasium.assets.geoms.pillars import Pillars
 from safety_gymnasium.assets.geoms.sigwalls import Sigwalls
 from safety_gymnasium.assets.geoms.staged_goal import StagedGoal
 from safety_gymnasium.assets.geoms.walls import Walls
+from safety_gymnasium.assets.geoms.zone_env_walls import ZoneEnvWalls
+from safety_gymnasium.assets.geoms.zones import Zones
 
 
 GEOMS_REGISTER = [
@@ -39,4 +41,6 @@ GEOMS_REGISTER = [
     Pillars,
     Walls,
     Sigwalls,
+    Zones,
+    ZoneEnvWalls,
 ]

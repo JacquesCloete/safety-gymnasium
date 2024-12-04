@@ -274,6 +274,12 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
         else:
             self.observation_space = self.obs_info.obs_space_dict
 
+    def _set_agent_location(self, location: tuple[float, float]) -> None:
+        self.agent.locations = [location]
+
+    def _set_agent_rotation(self, rot: float) -> None:
+        self.agent.rot = rot
+
     def _build_placements_dict(self) -> None:
         """Build a dict of placements.
 

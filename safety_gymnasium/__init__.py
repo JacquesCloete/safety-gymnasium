@@ -111,6 +111,19 @@ def __combine(tasks, agents, max_episode_steps):
 
 
 # ----------------------------------------
+# ZoneEnv
+# ----------------------------------------
+zone_env_tasks = {
+    'ZoneEnv0': {},
+    'ZoneEnv1': {},
+    'ZoneEnv2': {},
+    'ZoneEnv3': {},
+    'ZoneEnvFixed2': {},
+}
+__combine(zone_env_tasks, robots, max_episode_steps=None)
+
+
+# ----------------------------------------
 # Safety Navigation
 # ----------------------------------------
 

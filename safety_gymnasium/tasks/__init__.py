@@ -14,6 +14,7 @@
 # ==============================================================================
 """Tasks in Safety-Gymnasium."""
 
+
 from safety_gymnasium.tasks.safe_multi_agent.tasks.multi_goal.multi_goal_level0 import (
     MultiGoalLevel0,
 )
@@ -69,3 +70,8 @@ from safety_gymnasium.tasks.safe_vision.formula_one.formula_one_level2 import Fo
 from safety_gymnasium.tasks.safe_vision.race.race_level0 import RaceLevel0
 from safety_gymnasium.tasks.safe_vision.race.race_level1 import RaceLevel1
 from safety_gymnasium.tasks.safe_vision.race.race_level2 import RaceLevel2
+from safety_gymnasium.tasks.zone_env.zone_env_fixed_level_2 import ZoneEnvFixedLevel2
+from safety_gymnasium.tasks.zone_env.zone_env_level0 import ZoneEnvLevel0
+from safety_gymnasium.tasks.zone_env.zone_env_level1 import ZoneEnvLevel1
+from safety_gymnasium.tasks.zone_env.zone_env_level2 import ZoneEnvLevel2
+from safety_gymnasium.tasks.zone_env.zone_env_level3 import ZoneEnvLevel3

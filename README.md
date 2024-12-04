@@ -458,6 +458,21 @@ class MytaskLevel0(BaseTask):
         # depending on your task
 ```
 
+### Jacques' Checklist for Adding New Environments
+
+- Add any new `Geoms` to `safety_gymnasium/assets/geoms/` (and update the `__init__` file).
+- Add any new tasks to `safety_gymnasium/tasks/{task_folder}/` (and update the `__init__` file in `safety_gymnasium/tasks/`).
+  - If creating a new family of tasks, create a new task folder for them.
+  - Be careful to follow the correct task naming convention for each task class: `{TaskFamily}Level{TaskNumber}`.
+- Add the tasks for registration in the top-level `__init__` file.
+  - Use the correct task dict key naming convention: `{TaskFamily}{TaskNumber}`.
+- Remember to rebuild the package to register the new tasks.
+- The environment Gym ID will be `Safety{Agent}{TaskFamily}{TaskNumber}-v0`.
+  - We prefix the environments with `Safety` to indicate that they are Safety Gymnasium envs and thus need to be handled a bit differently to normal Gymnasium envs
+    - Notable differences the addition of a `cost` result when calling `env.step`, and incompatibility with Gymnasium wrappers;  use the wrappers `SafetyGymnasium2Gymnasium` and `Gymnasium2SafetyGymnasium` to convert back and forth.
+    - Safety Gymnasium envs are not compatible with Gymnasium `(A)SyncVectorEnv`, even with the conversion wrappers. Instead use Safety Gymnasium `(A)SyncVectorEnv`, and if you're using Gymnasium wrappers, convert back to Safety Gymnasium after applying those wrappers.
+
+
 ## Citing Safety-Gymnasium
 
 If you find Safety-Gymnasium useful, please cite it in your publications.
