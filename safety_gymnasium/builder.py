@@ -218,7 +218,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
             # Constraint processing
             if self.task.constraint_violated:
                 info['constraint_violated'] = True
-                # if self.task.mechanism_conf.continue_goal:
+                # if self.task.mechanism_conf.continue_on_violation:
                 #     # Update the internal layout
                 #     # so we can correctly resample (given objects have moved)
                 #     self.task.update_layout()
@@ -232,10 +232,11 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
                 #     else:
                 #         # Try to make a goal, which could raise a ResamplingError exception
                 #         self.task.update_world()
+                # else:
+                #     self.terminated = True
                 # ---
                 # For now, we won't update the internal layout
-                # since it might get a bit weird for learning to avoid obstacles
-                if not self.task.mechanism_conf.continue_goal:
+                if not self.task.mechanism_conf.continue_on_violation:
                     self.terminated = True
 
             # Goal processing

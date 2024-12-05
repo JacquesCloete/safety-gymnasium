@@ -101,12 +101,14 @@ class MechanismConf:
     Attributes:
         randomize_layout (bool): If false, set the random seed before layout to constant.
         continue_goal (bool): If true, draw a new goal after achievement.
+        continue_on_violation (bool): If false, end episode when a constraint is violated.
         terminate_resample_failure (bool): If true, end episode when resampling fails,
         otherwise, raise a python exception.
     """
 
     randomize_layout: bool = True
     continue_goal: bool = True
+    continue_on_violation: bool = True
     terminate_resample_failure: bool = True
 
 
@@ -382,9 +384,9 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
             self.staged_goal.get_next_goal_xy(),  # pylint: disable=no-member
         )
         # Move goal geom to new layout position
-        self.world_info.world_config_dict['geoms']['staged_goal']['pos'][
-            :2
-        ] = self.world_info.layout['staged_goal']
+        self.world_info.world_config_dict['geoms']['staged_goal']['pos'][:2] = (
+            self.world_info.layout['staged_goal']
+        )
         self._set_goal(self.world_info.layout['staged_goal'], 'staged_goal')
         mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
