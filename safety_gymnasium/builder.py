@@ -238,6 +238,8 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
                 # For now, we won't update the internal layout
                 if not self.task.mechanism_conf.continue_on_violation:
                     self.terminated = True
+            else:
+                info['constraint_violated'] = False
 
             # Goal processing
             if self.task.goal_achieved:
@@ -258,6 +260,8 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
                         self.task.update_world()
                 else:
                     self.terminated = True
+            else:
+                info['goal_met'] = False
 
         # termination of death processing
         if not self.task.agent.is_alive():
