@@ -14,7 +14,12 @@
 # ==============================================================================
 """Tasks in Safety-Gymnasium."""
 
-
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_level0 import ReachAvoidLevel0
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_level1 import ReachAvoidLevel1
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_level2 import ReachAvoidLevel2
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_level0 import ReachAvoidResetLevel0
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_level1 import ReachAvoidResetLevel1
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_level2 import ReachAvoidResetLevel2
 from safety_gymnasium.tasks.safe_multi_agent.tasks.multi_goal.multi_goal_level0 import (
     MultiGoalLevel0,
 )

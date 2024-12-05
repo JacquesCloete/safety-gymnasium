@@ -16,7 +16,6 @@
 
 
 import gymnasium
-from gymnasium import logger
 from gymnasium.core import ActType
 
 
@@ -25,12 +24,15 @@ class SafetyGymnasium2Gymnasium(gymnasium.Wrapper):
 
     def step(self, action: ActType):
         obs, reward, cost, terminated, truncated, info = super().step(action)
-        if 'cost' in info:
-            logger.warn(
-                'The info dict already contains a cost. '
-                'Overwriting it may cause unexpected behavior.',
-            )
-        info['cost'] = cost
+        # if 'cost' in info:
+        #     logger.warn(
+        #         'The info dict already contains a cost. '
+        #         'Overwriting it may cause unexpected behavior.',
+        #     )
+        # info['cost'] = cost
+        # ---
+        # Just look up info['cost_sum'] if you want the cost;
+        # the env builder just looks up info['cost_sum'] to compute the cost anyway...
         return obs, reward, terminated, truncated, info
 
 
@@ -40,7 +42,8 @@ class Gymnasium2SafetyGymnasium(gymnasium.Wrapper):
     def step(self, action: ActType):
         obs, reward, terminated, truncated, info = super().step(action)
         try:
-            cost = info['cost']
+            # cost = info['cost']
+            cost = info['cost_sum']
         except KeyError as ex:
             raise ValueError(
                 'The info dict does not contain a cost which is required by Safety-Gymnasium.',

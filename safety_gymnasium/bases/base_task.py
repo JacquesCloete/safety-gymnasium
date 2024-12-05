@@ -603,3 +603,9 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     @abc.abstractmethod
     def goal_achieved(self) -> bool:
         """Check if task specific goal is achieved."""
+
+    @property
+    def constraint_violated(self) -> bool:
+        """Check if any task specific constraint is violated."""
+        # Implemented as False by default for backward compatibility
+        return False

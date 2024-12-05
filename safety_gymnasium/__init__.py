@@ -111,6 +111,20 @@ def __combine(tasks, agents, max_episode_steps):
 
 
 # ----------------------------------------
+# ReachAvoid
+# ----------------------------------------
+reach_avoid_tasks = {
+    'ReachAvoid0': {},
+    'ReachAvoid1': {},
+    'ReachAvoid2': {},
+    'ReachAvoidReset0': {},
+    'ReachAvoidReset1': {},
+    'ReachAvoidReset2': {},
+}
+__combine(reach_avoid_tasks, robots, max_episode_steps=1000)
+
+
+# ----------------------------------------
 # ZoneEnv
 # ----------------------------------------
 zone_env_tasks = {
