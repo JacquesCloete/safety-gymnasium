@@ -169,6 +169,8 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
       some geoms that has no randomness.
     - :attr:`goal_achieved` (bool): Determine whether the goal is achieved, it will be called in every timestep
       and it is implemented in different task.
+    - :attr:`constraint_violated` (bool): Determine whether a constraint is violated, it will be called in every timestep
+      and it is implemented in different task.
     """
 
     def __init__(self, config: dict) -> None:  # pylint: disable-next=too-many-statements
@@ -282,6 +284,14 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     def _set_agent_rotation(self, rot: float) -> None:
         self.agent.rot = rot
 
+    def _set_agent_start_rotation_lims(
+        self,
+        rot_lower: float,
+        rot_upper: float,
+    ) -> None:
+        self.agent.rot_lower = rot_lower
+        self.agent.rot_upper = rot_upper
+
     def _build_placements_dict(self) -> None:
         """Build a dict of placements.
 
@@ -309,7 +319,9 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
             'agent_xy': layout['agent'],
         }
         if self.agent.rot is None:
-            world_config['agent_rot'] = self.random_generator.random_rot()
+            world_config['agent_rot'] = self.random_generator.random_rot(
+                self.agent.rot_lower, self.agent.rot_upper
+            )
         else:
             world_config['agent_rot'] = float(self.agent.rot)
 

@@ -184,9 +184,9 @@ class RandomGenerator:
         """Wrapper for :meth:`np.random.RandomState.binomial`."""
         return self.random_generator.binomial(*args, **kwargs)
 
-    def random_rot(self) -> float:
+    def random_rot(self, lower: float = 0, upper: float = 2 * np.pi) -> float:
         """Use internal random state to get a random rotation in radians."""
-        return self.random_generator.uniform(0, 2 * np.pi)
+        return self.random_generator.uniform(lower, upper)
 
     def choice(self, *args, **kwargs) -> np.ndarray:
         """Wrapper for :meth:`np.random.RandomState.choice`."""

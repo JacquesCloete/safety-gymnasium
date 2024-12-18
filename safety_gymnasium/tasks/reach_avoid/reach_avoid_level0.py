@@ -25,7 +25,6 @@ class ReachAvoidLevel0(BaseTask):
         super().__init__(config=config)
 
         self.placements_conf.extents = [-1, -1, 1, 1]
-        self.mechanism_conf.continue_on_violation = False
 
         self._add_geoms(Goal(keepout=0.305))
 

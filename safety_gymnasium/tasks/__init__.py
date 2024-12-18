@@ -17,9 +17,18 @@
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level0 import ReachAvoidLevel0
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level1 import ReachAvoidLevel1
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level2 import ReachAvoidLevel2
-from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_level0 import ReachAvoidResetLevel0
-from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_level1 import ReachAvoidResetLevel1
-from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_level2 import ReachAvoidResetLevel2
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level0 import ReachAvoidResetAllLevel0
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level1 import ReachAvoidResetAllLevel1
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level2 import ReachAvoidResetAllLevel2
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_goal_level0 import (
+    ReachAvoidResetGoalLevel0,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_goal_level1 import (
+    ReachAvoidResetGoalLevel1,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_goal_level2 import (
+    ReachAvoidResetGoalLevel2,
+)
 from safety_gymnasium.tasks.safe_multi_agent.tasks.multi_goal.multi_goal_level0 import (
     MultiGoalLevel0,
 )

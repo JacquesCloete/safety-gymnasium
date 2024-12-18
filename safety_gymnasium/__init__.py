@@ -117,9 +117,12 @@ reach_avoid_tasks = {
     'ReachAvoid0': {},
     'ReachAvoid1': {},
     'ReachAvoid2': {},
-    'ReachAvoidReset0': {},
-    'ReachAvoidReset1': {},
-    'ReachAvoidReset2': {},
+    'ReachAvoidResetAll0': {},
+    'ReachAvoidResetAll1': {},
+    'ReachAvoidResetAll2': {},
+    'ReachAvoidResetGoal0': {},
+    'ReachAvoidResetGoal1': {},
+    'ReachAvoidResetGoal2': {},
 }
 __combine(reach_avoid_tasks, robots, max_episode_steps=1000)
 

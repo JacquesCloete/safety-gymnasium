@@ -141,6 +141,8 @@ class BaseAgent(abc.ABC):  # pylint: disable=too-many-instance-attributes
     - :attr:`locations` (list): Explicitly place agent XY coordinate.
     - :attr:`keepout` (float): Needs to be set to match the agent XML used.
     - :attr:`rot` (float): Override agent starting angle.
+    - :attr:`rot_lower` (float): Minimum starting angle (if random).
+    - :attr:`rot_upper` (float): Maximum starting angle (if random).
     - :attr:`engine` (:class:`Engine`): Physical engine instance.
     - :attr:`sensor_conf` (:class:`SensorConf`): Sensor observations configuration.
     - :attr:`sensor_info` (:class:`SensorInfo`): Sensor information.
@@ -162,6 +164,8 @@ class BaseAgent(abc.ABC):  # pylint: disable=too-many-instance-attributes
         locations: list | None = None,
         keepout: float = 0.4,
         rot: float | None = None,
+        rot_lower: float = 0.0,
+        rot_upper: float = 2 * np.pi,
     ) -> None:
         """Initialize the agent.
 
@@ -179,6 +183,8 @@ class BaseAgent(abc.ABC):  # pylint: disable=too-many-instance-attributes
         self.locations: list = [] if locations is None else locations
         self.keepout: float = keepout
         self.rot: float = rot
+        self.rot_lower: float = rot_lower
+        self.rot_upper: float = rot_upper
 
         self.engine: Engine = None
         self._load_model()
