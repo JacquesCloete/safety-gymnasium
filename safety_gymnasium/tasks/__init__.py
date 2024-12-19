@@ -14,6 +14,21 @@
 # ==============================================================================
 """Tasks in Safety-Gymnasium."""
 
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_curriculum_level1 import (
+    ReachAvoidCurriculumLevel1,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_curriculum_level2 import (
+    ReachAvoidCurriculumLevel2,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_curriculum_level3 import (
+    ReachAvoidCurriculumLevel3,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_curriculum_level4 import (
+    ReachAvoidCurriculumLevel4,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_curriculum_level5 import (
+    ReachAvoidCurriculumLevel5,
+)
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level0 import ReachAvoidLevel0
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level1 import ReachAvoidLevel1
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level2 import ReachAvoidLevel2

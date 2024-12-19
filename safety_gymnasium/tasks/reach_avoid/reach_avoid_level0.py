@@ -25,6 +25,10 @@ class ReachAvoidLevel0(BaseTask):
         super().__init__(config=config)
 
         self.placements_conf.extents = [-1, -1, 1, 1]
+        self.lidar_conf.num_bins = 16
+        self.lidar_conf.max_dist = None
+        self.lidar_conf.exp_gain = 0.5
+        self.lidar_conf.alias = True
 
         self._add_geoms(Goal(keepout=0.305))
 

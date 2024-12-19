@@ -284,7 +284,7 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     def _set_agent_rotation(self, rot: float) -> None:
         self.agent.rot = rot
 
-    def _set_agent_start_rotation_lims(
+    def _set_agent_rotation_lims(
         self,
         rot_lower: float,
         rot_upper: float,
