@@ -35,6 +35,9 @@ from safety_gymnasium.tasks.reach_avoid.reach_avoid_level2 import ReachAvoidLeve
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level0 import ReachAvoidResetAllLevel0
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level1 import ReachAvoidResetAllLevel1
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level2 import ReachAvoidResetAllLevel2
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_goal_curriculum_level5 import (
+    ReachAvoidResetGoalCurriculumLevel5,
+)
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_goal_level0 import (
     ReachAvoidResetGoalLevel0,
 )
