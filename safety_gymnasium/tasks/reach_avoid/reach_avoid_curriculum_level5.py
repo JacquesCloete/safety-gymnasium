@@ -26,8 +26,8 @@ class ReachAvoidCurriculumLevel5(ReachAvoidCurriculumLevel1):
         super().__init__(config=config)
 
         self.hazards.keepout = 0.2
-        self.hazards.size = 0.3
+        self.hazards.size = 0.5
         self.hazards.num = 1
         self.agent.placements = [[-1, -1, 1, 0]]
         self.goal.placements = [[-1, 1.5, 1, 2.5]]
-        self.hazards.placements = [[-1.5, 0, 1.5, 1.5]]
+        self.hazards.placements = [[-1, 0, 1, 1.5]]

@@ -30,4 +30,4 @@ class ReachAvoidCurriculumLevel2(ReachAvoidCurriculumLevel1):
         self.hazards.num = 1
         self.agent.placements = [[-1, -1, 1, 0]]
         self.goal.placements = [[-1, 0.5, 1, 1.5]]
-        self.hazards.placements = [[-1.5, 0, 1.5, 1.5]]
+        self.hazards.placements = [[-1, 0, 1, 1.5]]
