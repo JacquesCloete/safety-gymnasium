@@ -32,6 +32,24 @@ from safety_gymnasium.tasks.reach_avoid.reach_avoid_curriculum_level5 import (
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level0 import ReachAvoidLevel0
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level1 import ReachAvoidLevel1
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_level2 import ReachAvoidLevel2
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_low_freq_curriculum_level1 import (
+    ReachAvoidLowFreqCurriculumLevel1,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_low_freq_curriculum_level2 import (
+    ReachAvoidLowFreqCurriculumLevel2,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_low_freq_curriculum_level3 import (
+    ReachAvoidLowFreqCurriculumLevel3,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_low_freq_curriculum_level4 import (
+    ReachAvoidLowFreqCurriculumLevel4,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_low_freq_curriculum_level5 import (
+    ReachAvoidLowFreqCurriculumLevel5,
+)
+from safety_gymnasium.tasks.reach_avoid.reach_avoid_low_freq_reset_goal_curriculum_level5 import (
+    ReachAvoidLowFreqResetGoalCurriculumLevel5,
+)
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level0 import ReachAvoidResetAllLevel0
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level1 import ReachAvoidResetAllLevel1
 from safety_gymnasium.tasks.reach_avoid.reach_avoid_reset_all_level2 import ReachAvoidResetAllLevel2

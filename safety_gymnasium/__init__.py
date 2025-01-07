@@ -134,6 +134,20 @@ __combine(reach_avoid_tasks, robots, max_episode_steps=1000)
 
 
 # ----------------------------------------
+# ReachAvoid (low control frequency)
+# ----------------------------------------
+reach_avoid_low_freq_tasks = {
+    'ReachAvoidLowFreqCurriculum1': {},
+    'ReachAvoidLowFreqCurriculum2': {},
+    'ReachAvoidLowFreqCurriculum3': {},
+    'ReachAvoidLowFreqCurriculum4': {},
+    'ReachAvoidLowFreqCurriculum5': {},
+    'ReachAvoidLowFreqResetGoalCurriculum5': {},
+}
+__combine(reach_avoid_low_freq_tasks, robots, max_episode_steps=100)
+
+
+# ----------------------------------------
 # ZoneEnv
 # ----------------------------------------
 zone_env_tasks = {
