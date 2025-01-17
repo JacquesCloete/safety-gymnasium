@@ -458,7 +458,7 @@ class MytaskLevel0(BaseTask):
         # depending on your task
 ```
 
-### Checklist for Adding New Environments
+### Guide for Adding New Environments
 
 - Add any new `Geoms` to `safety_gymnasium/assets/geoms/` (and update the `__init__` file).
 - Add any new tasks to `safety_gymnasium/tasks/{task_folder}/` (and update the `__init__` file in `safety_gymnasium/tasks/`).
