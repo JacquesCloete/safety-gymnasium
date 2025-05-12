@@ -485,8 +485,12 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
               - **vision**: the camera used for vision observation, which is fixed in front of the
                 agent's head.
               - **track**: The camera used for tracking the agent.
-              - **fixednear**: the camera used for top-down observation.
-              - **fixedfar**: the camera used for top-down observation, but is further than **fixednear**.
+              - **fixednear**: The camera used for pseudo top-down observation.
+              - **fixedfar**: The camera used for pseudo top-down observation, but is further than **fixednear**.
+              - **fixedfar++**: The camera used for pseudo top-down observation, but is further than **fixedfar**.
+              - **topdownnear**: The camera used for true top-down observation.
+              - **topdownfar**: The camera used for true top-down observation, but is further than **topdownnear**.
+              - **topdownfar++**: The camera used for true top-down observation, but is further than **topdownfar**.
         """
         self.model.vis.global_.offwidth = width
         self.model.vis.global_.offheight = height

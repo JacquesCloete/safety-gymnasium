@@ -109,8 +109,12 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
               - **vision**: The camera used for vision observation, which is fixed in front of the
                 agent's head.
               - **track**: The camera used for tracking the agent.
-              - **fixednear**: The camera used for top-down observation.
-              - **fixedfar**: The camera used for top-down observation, but is further than **fixednear**.
+              - **fixednear**: The camera used for pseudo top-down observation.
+              - **fixedfar**: The camera used for pseudo top-down observation, but is further than **fixednear**.
+              - **fixedfar++**: The camera used for pseudo top-down observation, but is further than **fixedfar**.
+              - **topdownnear**: The camera used for true top-down observation.
+              - **topdownfar**: The camera used for true top-down observation, but is further than **topdownnear**.
+              - **topdownfar++**: The camera used for true top-down observation, but is further than **topdownfar**.
 
         Args:
             task_id (str): Task id.
