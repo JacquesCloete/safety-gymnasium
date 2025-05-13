@@ -1,4 +1,4 @@
-# Copyright 2024 anonymous-elephant. All Rights Reserved.
+# Copyright 2025 Jacques Cloete. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""ZoneEnv level 2."""
+"""RGBZoneEnv level 0."""
 
-from safety_gymnasium.assets.geoms import Zones
-from safety_gymnasium.tasks.zone_env.zone_env_base_task import ZoneEnvBaseTask
+from safety_gymnasium.assets.geoms import RGBZones
+from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_base_task import RGBZoneEnvBaseTask
 
 
-class ZoneEnvLevel2(ZoneEnvBaseTask):
-    """Two green, two yellow, two red, and two magenta zones."""
+class RGBZoneEnvLevel0(RGBZoneEnvBaseTask):
+    """One zone."""
 
     def __init__(self, config) -> None:
         super().__init__(config=config, zone_size=0.4)
 
         self._add_geoms(
-            Zones(color='green', size=self.zone_size, num=2),
-            Zones(color='yellow', size=self.zone_size, num=2),
-            Zones(color='blue', size=self.zone_size, num=2),
-            Zones(color='magenta', size=self.zone_size, num=2),
+            RGBZones(
+                zones_id=0,
+                size=self.zone_size,
+                num=1,
+                rgb_lower_bounds=[0, 0, 0],
+                rgb_upper_bounds=[1, 1, 1],
+            )
         )

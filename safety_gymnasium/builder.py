@@ -185,6 +185,9 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.task.update_world()  # refresh specific settings
         self.task.agent.reset()
 
+        # Populate info with task-specific details after reset is complete
+        info.update(self.task.get_task_specific_info())
+
         cost = self._cost()
         assert cost['cost_sum'] == 0, f'World has starting cost! {cost}'
         # Reset stateful parts of the environment
@@ -208,6 +211,8 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
             reward = self.task.reward_conf.reward_exception
             info['cost_exception'] = 1.0
+            # Populate info even in case of exception, if possible and meaningful
+            info.update(self.task.get_task_specific_info())
         else:
             # Reward processing
             reward = self._reward()
@@ -218,6 +223,9 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
             cost = info['cost_sum']
 
             self.task.specific_step()
+
+            # Populate info with task-specific details for this step
+            info.update(self.task.get_task_specific_info())
 
             # Constraint processing
             if self.task.constraint_violated:

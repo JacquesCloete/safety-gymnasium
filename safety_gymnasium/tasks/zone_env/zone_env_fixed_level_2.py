@@ -32,20 +32,16 @@ class ZoneEnvFixedLevel2(ZoneEnvBaseTask):
 
         # Safety
         self._add_geoms(
-            Zones(color='green', size=self.zone_size, num=1, locations=[(1.2, -1.9)], keepout=0)
-        )
-        self._add_geoms(Zones(color='yellow', size=self.zone_size, num=1, locations=[(1.1, 2.1)]))
-        self._add_geoms(
+            Zones(color='green', size=self.zone_size, num=1, locations=[(1.2, -1.9)], keepout=0),
+            Zones(color='yellow', size=self.zone_size, num=1, locations=[(1.1, 2.1)]),
             Zones(
                 color='blue',
                 size=self.zone_size,
                 num=3,
                 locations=[(2, -1), (0.6, -1.05), (0.1, -2.3)],
                 keepout=0,
-            )
-        )
-        self._add_geoms(
-            Zones(color='magenta', size=self.zone_size, num=1, locations=[(1.8, 0.4)], keepout=0)
+            ),
+            Zones(color='magenta', size=self.zone_size, num=1, locations=[(1.8, 0.4)], keepout=0),
         )
         self._set_agent_location((-1.2, -0.6))
 

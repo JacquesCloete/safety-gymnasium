@@ -154,6 +154,7 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     - :meth:`specific_reset`: Reset task specific parameters, it will be called in every reset.
     - :meth:`specific_step`: Step task specific parameters, it will be called in every timestep.
     - :meth:`update_world`: Update world, it will be called when ``env.reset()`` or :meth:`goal_achieved` == True.
+    - :meth:`get_task_specific_info`: Get task specific info dict, it will be called in every timestep.
 
     Attributes:
 
@@ -623,3 +624,11 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
         """Check if any task specific constraint is violated."""
         # Implemented as False by default for backward compatibility
         return False
+
+    def get_task_specific_info(self) -> dict:
+        """
+        Return a dictionary with task-specific information.
+        Base implementation returns an empty dictionary.
+        Tasks can override this to provide custom info.
+        """
+        return {}

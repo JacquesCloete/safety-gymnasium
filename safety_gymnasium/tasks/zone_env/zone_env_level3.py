@@ -26,18 +26,12 @@ class ZoneEnvLevel3(ZoneEnvBaseTask):
         super().__init__(config=config, zone_size=0.4)
 
         self._add_geoms(
-            Zones(color='green', size=self.zone_size, num=1, locations=[(2.3, 0)], keepout=0)
-        )
-        self._add_geoms(
-            Zones(color='yellow', size=self.zone_size, num=2, locations=[(0, 2), (1.5, -1)])
-        )
-        self._add_geoms(
+            Zones(color='green', size=self.zone_size, num=1, locations=[(2.3, 0)], keepout=0),
+            Zones(color='yellow', size=self.zone_size, num=2, locations=[(0, 2), (1.5, -1)]),
             Zones(
                 color='blue', size=self.zone_size, num=2, locations=[(-1.5, 0), (0, 0)], keepout=0
-            )
-        )
-        self._add_geoms(
-            Zones(color='magenta', size=self.zone_size, num=1, locations=[(0, 1.2)], keepout=0)
+            ),
+            Zones(color='magenta', size=self.zone_size, num=1, locations=[(0, 1.2)], keepout=0),
         )
 
         self._set_agent_location((0, -2))

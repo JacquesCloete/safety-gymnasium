@@ -159,6 +159,17 @@ zone_env_tasks = {
 }
 __combine(zone_env_tasks, robots, max_episode_steps=None)
 
+# ----------------------------------------
+# RGBZoneEnv
+# ----------------------------------------
+rgb_zone_env_tasks = {
+    'RGBZoneEnv0': {},
+    'RGBZoneEnv1': {},
+    'RGBZoneEnv2': {},
+    'RGBZoneEnv3': {},
+}
+__combine(rgb_zone_env_tasks, robots, max_episode_steps=100)
+
 
 # ----------------------------------------
 # Safety Navigation

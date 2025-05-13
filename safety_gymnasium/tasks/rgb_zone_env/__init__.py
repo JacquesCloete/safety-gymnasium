@@ -1,4 +1,4 @@
-# Copyright 2024 anonymous-elephant. All Rights Reserved.
+# Copyright 2025 Jacques Cloete. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""ZoneEnv level 1."""
-
-from safety_gymnasium.assets.geoms import Zones
-from safety_gymnasium.tasks.zone_env.zone_env_base_task import ZoneEnvBaseTask
-
-
-class ZoneEnvLevel1(ZoneEnvBaseTask):
-    """Two blue and two yellow zones."""
-
-    def __init__(self, config) -> None:
-        super().__init__(config=config, zone_size=0.4)
-
-        self._add_geoms(
-            Zones(color='green', size=self.zone_size, num=2),
-            Zones(color='yellow', size=self.zone_size, num=2),
-        )
+"""RGBZoneEnv tasks."""
