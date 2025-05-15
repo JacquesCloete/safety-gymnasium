@@ -34,6 +34,7 @@ class RGBZoneEnvBaseTask(BaseTask):
         self.lidar_conf.alias = True
         self.cost_conf.constrain_indicator = False
         self.observation_flatten = False  # observation is a dict
+        self.fast_rebuild = True  # only change geom positions and colors
         if walls:
             self._add_geoms(ZoneEnvWalls())
         if low_freq:

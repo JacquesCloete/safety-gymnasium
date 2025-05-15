@@ -180,6 +180,7 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
     - :attr:`observe_vision` (bool): Whether to observe vision from the agent.
     - :attr:`debug` (bool): Whether to enable debug mode, which is pre-config during registration.
     - :attr:`observation_flatten` (bool): Whether to flatten the observation.
+    - :attr:`fast_rebuild` (bool): Whether to fast rebuild the world.
     - :attr:`agent` (Agent): Agent instance added into current environment.
     - :attr:`action_noise` (float): Magnitude of independent per-component gaussian action noise.
     - :attr:`model`: mjModel.
@@ -219,6 +220,7 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
         self.observe_vision = False  # Observe vision from the agent
         self.debug = False
         self.observation_flatten = True  # Flatten observation into a vector
+        self.fast_rebuild = False  # Fast rebuild the world
         self._parse(config)
         self.agent = None
         self.action_noise: float = (
@@ -303,11 +305,13 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
 
         if self.world is None:
             self.world = World(self.agent, self._obstacles, self.world_info.world_config_dict)
-            self.world.reset()
+            self.world.reset(build=False)  # seemingly redundant
             self.world.build()
         else:
             self.world.reset(build=False)
-            self.world.rebuild(self.world_info.world_config_dict, state=False)
+            self.world.rebuild(
+                self.world_info.world_config_dict, state=False, fast_rebuild=self.fast_rebuild
+            )
             if self.viewer:
                 self._update_viewer(self.model, self.data)
 

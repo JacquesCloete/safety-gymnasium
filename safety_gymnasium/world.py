@@ -417,17 +417,341 @@ class World:  # pylint: disable=too-many-instance-attributes
         mujoco.mj_forward(model, data)  # pylint: disable=no-member
         self.engine.update(model, data)
 
-    def rebuild(self, config=None, state=True):
+    def rebuild(self, config=None, state=True, fast_rebuild=False):
         """Build a new sim from a model if the model changed."""
         if state:
             old_state = self.get_state()
 
         if config:
             self.parse(config)
-        self.build()
+        if fast_rebuild:
+            self.fast_rebuild()
+        else:
+            self.build()
         if state:
             self.set_state(old_state)
         mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
+
+    def fast_rebuild(self):
+        """Rebuild the sim by modifying the existing model and data parameters
+        based on the current self.config. This avoids recompiling the XML.
+        Assumes self.config has been updated via self.parse() if a new config was provided.
+        """
+        if self.model is None or self.data is None:
+            raise RuntimeError(
+                'Fast rebuild called before model/data initialized. Perform a full build first.',
+            )
+
+        # Reset kinematic state to a clean slate
+        # model.qpos0 reflects the initial state from the last full XML compilation.
+        self.data.qpos[:] = np.copy(self.model.qpos0)
+        self.data.qvel[:] = 0.0
+        if self.model.na > 0:  # Number of actuators
+            self.data.act[:] = 0.0
+
+        # 1. Update Agent's initial pose from the current configuration
+        agent_placed_by_fast_rebuild = False
+        agent_main_body_name = None
+
+        # Try to get the agent's main body name from the parsed XML.
+        # self.xml is populated by the build() method.
+        if (
+            self.xml
+            and 'mujoco' in self.xml
+            and 'worldbody' in self.xml['mujoco']
+            and isinstance(self.xml['mujoco']['worldbody'].get('body'), list)
+            and len(self.xml['mujoco']['worldbody']['body']) > 0
+        ):
+            agent_main_body_name = self.xml['mujoco']['worldbody']['body'][0].get('@name')
+
+        if agent_main_body_name:
+            try:
+                body_id = mujoco.mj_name2id(
+                    self.model, mujoco.mjtObj.mjOBJ_BODY, agent_main_body_name
+                )
+                if body_id != -1:
+                    # Strategy 1: Try to find and use a root FREE joint
+                    for j_id in range(self.model.njnt):
+                        if (
+                            self.model.jnt_bodyid[j_id] == body_id
+                            and self.model.jnt_type[j_id] == mujoco.mjtJoint.mjJNT_FREE
+                        ):
+
+                            qpos_adr = self.model.jnt_qposadr[j_id]
+                            new_agent_pos_3d = np.r_[self.agent_xy, self._agent.z_height]
+                            new_agent_quat = rot2quat(self.agent_rot)
+
+                            self.data.qpos[qpos_adr : qpos_adr + 3] = np.asarray(
+                                new_agent_pos_3d, dtype=np.float64
+                            )
+                            self.data.qpos[qpos_adr + 3 : qpos_adr + 7] = np.asarray(
+                                new_agent_quat, dtype=np.float64
+                            )
+                            agent_placed_by_fast_rebuild = True
+                            break  # Found and used the free joint
+
+                    # Strategy 2: If no free joint was used, try specific slide/hinge joints (for Point-like agents)
+                    if not agent_placed_by_fast_rebuild:
+                        joint_x_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, "x")
+                        joint_y_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, "y")
+                        joint_z_id = mujoco.mj_name2id(
+                            self.model, mujoco.mjtObj.mjOBJ_JOINT, "z"
+                        )  # Hinge for rotation
+
+                        if (
+                            joint_x_id != -1
+                            and self.model.jnt_bodyid[joint_x_id] == body_id
+                            and self.model.jnt_type[joint_x_id] == mujoco.mjtJoint.mjJNT_SLIDE
+                            and joint_y_id != -1
+                            and self.model.jnt_bodyid[joint_y_id] == body_id
+                            and self.model.jnt_type[joint_y_id] == mujoco.mjtJoint.mjJNT_SLIDE
+                            and joint_z_id != -1
+                            and self.model.jnt_bodyid[joint_z_id] == body_id
+                            and self.model.jnt_type[joint_z_id] == mujoco.mjtJoint.mjJNT_HINGE
+                        ):
+                            self.model.body_pos[body_id] = np.array(
+                                [0.0, 0.0, self._agent.z_height], dtype=np.float64
+                            )
+
+                            qpos_adr_x = self.model.jnt_qposadr[joint_x_id]
+                            qpos_adr_y = self.model.jnt_qposadr[joint_y_id]
+                            qpos_adr_z_rot = self.model.jnt_qposadr[joint_z_id]
+
+                            self.data.qpos[qpos_adr_x] = self.agent_xy[0]
+                            self.data.qpos[qpos_adr_y] = self.agent_xy[1]
+                            self.data.qpos[qpos_adr_z_rot] = (
+                                self.agent_rot
+                            )  # agent_rot is a single angle for Point
+
+                            agent_placed_by_fast_rebuild = True
+            except Exception:
+                pass  # Silently proceed if lookup or update fails
+
+        if not agent_placed_by_fast_rebuild:
+            warning_message = (
+                "Warning: Agent may not be at the new randomized position during fast_rebuild. "
+                "Its pose will be based on the initial state from the last full build (qpos0). "
+            )
+            if agent_main_body_name:
+                warning_message += f"Attempted to find a root free joint or specific x/y/z joints for body '{agent_main_body_name}'. "
+            else:
+                warning_message += (
+                    "Could not determine agent's main body name for specific joint lookup. "
+                )
+            warning_message += "This is expected if the agent does not use a recognized root joint mechanism (free joint or x/y slide + z hinge)."
+            print(warning_message)
+
+        # 2. Update Geoms (fixed bodies)
+        # self.geoms is updated by self.parse()
+        for name, geom_group_config in self.geoms.items():
+            try:
+                body_id = self.model.body(name).id
+
+                if 'pos' in geom_group_config:
+                    self.model.body_pos[body_id] = np.asarray(
+                        geom_group_config['pos'], dtype=np.float64
+                    )
+                current_rot = geom_group_config.get('rot')
+                current_quat = geom_group_config.get('quat')
+                if current_rot is not None:
+                    self.model.body_quat[body_id] = np.asarray(
+                        rot2quat(current_rot), dtype=np.float64
+                    )
+                elif current_quat is not None:
+                    self.model.body_quat[body_id] = np.asarray(current_quat, dtype=np.float64)
+
+                for geom_item_config in geom_group_config.get('geoms', []):
+                    geom_name = geom_item_config['name']
+                    geom_id = self.model.geom(geom_name).id
+                    if 'rgba' in geom_item_config:
+                        self.model.geom_rgba[geom_id] = np.asarray(
+                            geom_item_config['rgba'], dtype=float
+                        )
+                    if 'size' in geom_item_config:
+                        config_size_arr = np.asarray(
+                            geom_item_config['size'], dtype=np.float64
+                        ).flatten()
+                        geom_type = self.model.geom_type[geom_id]
+
+                        final_size_for_model = np.zeros(3, dtype=np.float64)
+
+                        if geom_type == mujoco.mjtGeom.mjGEOM_SPHERE:
+                            if config_size_arr.size >= 1:
+                                final_size_for_model[0] = config_size_arr[0]  # radius
+                        elif (
+                            geom_type == mujoco.mjtGeom.mjGEOM_CAPSULE
+                            or geom_type == mujoco.mjtGeom.mjGEOM_CYLINDER
+                        ):
+                            if config_size_arr.size >= 1:
+                                final_size_for_model[0] = config_size_arr[0]  # radius
+                            if config_size_arr.size >= 2:
+                                final_size_for_model[1] = config_size_arr[1]  # half-height
+                        elif config_size_arr.size == 3:  # For BOX, ELLIPSOID, PLANE, MESH (scaling)
+                            final_size_for_model[:] = config_size_arr[:]
+                        elif config_size_arr.size == 1 and (
+                            geom_type == mujoco.mjtGeom.mjGEOM_BOX
+                            or geom_type == mujoco.mjtGeom.mjGEOM_ELLIPSOID
+                            or geom_type == mujoco.mjtGeom.mjGEOM_MESH
+                        ):
+                            # Assume uniform scaling if one size param provided
+                            final_size_for_model[:] = config_size_arr[0]
+                        else:  # Fallback: copy available elements, pad with zeros
+                            len_to_copy = min(config_size_arr.size, 3)
+                            final_size_for_model[:len_to_copy] = config_size_arr[:len_to_copy]
+
+                        self.model.geom_size[geom_id] = final_size_for_model
+            except KeyError:
+                # Silently ignore if a configured geom is not in the current model
+                # (e.g. if base XML changed and fast_rebuild is attempted)
+                pass
+
+        # 3. Update FreeGeoms (movable objects with freejoints)
+        # self.free_geoms is updated by self.parse()
+        for name, free_geom_config in self.free_geoms.items():
+            try:
+                joint_name = free_geom_config.get('freejoint', name)
+                joint_id = self.model.joint(joint_name).id
+
+                if self.model.jnt_type[joint_id] == mujoco.mjtJoint.mjJNT_FREE:
+                    qpos_adr = self.model.jnt_qposadr[joint_id]
+                    if 'pos' in free_geom_config:
+                        self.data.qpos[qpos_adr : qpos_adr + 3] = np.asarray(
+                            free_geom_config['pos'], dtype=np.float64
+                        )
+                    current_rot = free_geom_config.get('rot')
+                    current_quat = free_geom_config.get('quat')
+                    if current_rot is not None:
+                        self.data.qpos[qpos_adr + 3 : qpos_adr + 7] = np.asarray(
+                            rot2quat(current_rot), dtype=np.float64
+                        )
+                    elif current_quat is not None:
+                        self.data.qpos[qpos_adr + 3 : qpos_adr + 7] = np.asarray(
+                            current_quat, dtype=np.float64
+                        )
+
+                for geom_item_config in free_geom_config.get('geoms', []):
+                    geom_name = geom_item_config['name']
+                    geom_id = self.model.geom(geom_name).id
+                    if 'rgba' in geom_item_config:
+                        self.model.geom_rgba[geom_id] = np.asarray(
+                            geom_item_config['rgba'], dtype=float
+                        )
+                    if (
+                        'size' in geom_item_config
+                    ):  # This block replaces the original self.model.geom_size assignment
+                        config_size_arr = np.asarray(
+                            geom_item_config['size'], dtype=np.float64
+                        ).flatten()
+                        geom_type = self.model.geom_type[geom_id]
+
+                        final_size_for_model = np.zeros(3, dtype=np.float64)
+
+                        if geom_type == mujoco.mjtGeom.mjGEOM_SPHERE:
+                            if config_size_arr.size >= 1:
+                                final_size_for_model[0] = config_size_arr[0]  # radius
+                        elif (
+                            geom_type == mujoco.mjtGeom.mjGEOM_CAPSULE
+                            or geom_type == mujoco.mjtGeom.mjGEOM_CYLINDER
+                        ):
+                            # XML: size="radius half-height" (2 params)
+                            # mjModel.geom_size: [radius, half-height, 0.0] (3 params)
+                            if config_size_arr.size >= 1:
+                                final_size_for_model[0] = config_size_arr[0]  # radius
+                            if config_size_arr.size >= 2:
+                                final_size_for_model[1] = config_size_arr[1]  # half-height
+                        elif config_size_arr.size == 3:  # For BOX, ELLIPSOID, PLANE, MESH (scaling)
+                            final_size_for_model[:] = config_size_arr[:]
+                        elif config_size_arr.size == 1 and (
+                            geom_type == mujoco.mjtGeom.mjGEOM_BOX
+                            or geom_type == mujoco.mjtGeom.mjGEOM_ELLIPSOID
+                            or geom_type == mujoco.mjtGeom.mjGEOM_MESH
+                        ):
+                            # Assume uniform scaling if one size param provided
+                            final_size_for_model[:] = config_size_arr[0]
+                        else:  # Fallback: copy available elements, pad with zeros
+                            len_to_copy = min(config_size_arr.size, 3)
+                            final_size_for_model[:len_to_copy] = config_size_arr[:len_to_copy]
+
+                        self.model.geom_size[geom_id] = final_size_for_model
+            except KeyError:
+                pass
+
+        # 4. Update Mocaps
+        # self.mocaps is updated by self.parse()
+        for name, mocap_config in self.mocaps.items():
+            try:
+                body_id = self.model.body(name).id
+                if self.model.body_mocapid[body_id] != -1:
+                    mocap_id = self.model.body_mocapid[body_id]
+                    if 'pos' in mocap_config:
+                        self.data.mocap_pos[mocap_id] = np.asarray(
+                            mocap_config['pos'], dtype=np.float64
+                        )
+                    current_rot = mocap_config.get('rot')
+                    current_quat = mocap_config.get('quat')
+                    if current_rot is not None:
+                        self.data.mocap_quat[mocap_id] = np.asarray(
+                            rot2quat(current_rot), dtype=np.float64
+                        )
+                    elif current_quat is not None:
+                        self.data.mocap_quat[mocap_id] = np.asarray(current_quat, dtype=np.float64)
+
+                    for geom_item_config in mocap_config.get('geoms', []):
+                        geom_name = geom_item_config['name']
+                        geom_id = self.model.geom(geom_name).id
+                        if 'rgba' in geom_item_config:
+                            self.model.geom_rgba[geom_id] = np.asarray(
+                                geom_item_config['rgba'], dtype=float
+                            )
+                        if 'size' in geom_item_config:
+                            config_size_arr = np.asarray(
+                                geom_item_config['size'], dtype=np.float64
+                            ).flatten()
+                            geom_type = self.model.geom_type[geom_id]
+
+                            final_size_for_model = np.zeros(3, dtype=np.float64)
+
+                            if geom_type == mujoco.mjtGeom.mjGEOM_SPHERE:
+                                if config_size_arr.size >= 1:
+                                    final_size_for_model[0] = config_size_arr[0]  # radius
+                            elif (
+                                geom_type == mujoco.mjtGeom.mjGEOM_CAPSULE
+                                or geom_type == mujoco.mjtGeom.mjGEOM_CYLINDER
+                            ):
+                                if config_size_arr.size >= 1:
+                                    final_size_for_model[0] = config_size_arr[0]  # radius
+                                if config_size_arr.size >= 2:
+                                    final_size_for_model[1] = config_size_arr[1]  # half-height
+                            elif (
+                                config_size_arr.size == 3
+                            ):  # For BOX, ELLIPSOID, PLANE, MESH (scaling)
+                                final_size_for_model[:] = config_size_arr[:]
+                            elif config_size_arr.size == 1 and (
+                                geom_type == mujoco.mjtGeom.mjGEOM_BOX
+                                or geom_type == mujoco.mjtGeom.mjGEOM_ELLIPSOID
+                                or geom_type == mujoco.mjtGeom.mjGEOM_MESH
+                            ):
+                                # Assume uniform scaling if one size param provided
+                                final_size_for_model[:] = config_size_arr[0]
+                            else:  # Fallback: copy available elements, pad with zeros
+                                len_to_copy = min(config_size_arr.size, 3)
+                                final_size_for_model[:len_to_copy] = config_size_arr[:len_to_copy]
+
+                            self.model.geom_size[geom_id] = final_size_for_model
+            except KeyError:
+                pass
+
+        # 5. Floor properties (limited update: size only)
+        # self.floor_size is updated by self.parse()
+        try:
+            floor_geom_id = self.model.geom('floor').id
+            self.model.geom_size[floor_geom_id] = np.asarray(self.floor_size, dtype=np.float64)
+        except KeyError:
+            pass
+
+        # Recompute simulation intrinsics from new position and other changes
+        mujoco.mj_forward(self.model, self.data)
+        self.engine.update(self.model, self.data)
 
     def reset(self, build=True):
         """Reset the world. (sim is accessed through self.sim)"""
