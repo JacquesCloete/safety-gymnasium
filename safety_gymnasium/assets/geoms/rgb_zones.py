@@ -76,14 +76,20 @@ class RGBZones(Geom):  # pylint: disable=too-many-instance-attributes
         max_predefined_group = max(GROUP.values())
         return max_predefined_group + self.id + 1
 
-    def randomize_color(self) -> None:
+    def randomize_color(self, seed: int | None = None) -> None:
         """
         Sets the zone's color. Randomizes RGB values within the defined bounds.
         Updates self.color (R,G,B,A).
         """
-        r = np.random.uniform(self.rgb_lower_bounds[0], self.rgb_upper_bounds[0])
-        g = np.random.uniform(self.rgb_lower_bounds[1], self.rgb_upper_bounds[1])
-        b = np.random.uniform(self.rgb_lower_bounds[2], self.rgb_upper_bounds[2])
+        if seed is not None:
+            rng = np.random.RandomState(seed)
+            r = rng.uniform(self.rgb_lower_bounds[0], self.rgb_upper_bounds[0])
+            g = rng.uniform(self.rgb_lower_bounds[1], self.rgb_upper_bounds[1])
+            b = rng.uniform(self.rgb_lower_bounds[2], self.rgb_upper_bounds[2])
+        else:
+            r = np.random.uniform(self.rgb_lower_bounds[0], self.rgb_upper_bounds[0])
+            g = np.random.uniform(self.rgb_lower_bounds[1], self.rgb_upper_bounds[1])
+            b = np.random.uniform(self.rgb_lower_bounds[2], self.rgb_upper_bounds[2])
 
         self.color = np.array([r, g, b, self.render_alpha])
 

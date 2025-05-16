@@ -51,7 +51,8 @@ class RGBZoneEnvBaseTask(BaseTask):
         # self._geoms is a dict mapping name to geom object, populated by _add_geoms()
         for geom_obj in self._geoms.values():
             if isinstance(geom_obj, RGBZones):
-                geom_obj.randomize_color()
+                rgb_seed = self.random_generator.random_generator.randint(np.iinfo(np.int32).max)
+                geom_obj.randomize_color(seed=rgb_seed)
 
         super().reset()  # Calls Underlying.reset(), which calls _build(), then _build_world_config()
 
