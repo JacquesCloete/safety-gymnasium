@@ -417,6 +417,65 @@ class World:  # pylint: disable=too-many-instance-attributes
         mujoco.mj_forward(model, data)  # pylint: disable=no-member
         self.engine.update(model, data)
 
+        print_debug = False
+        if print_debug:
+            # DEBUG PRINT: Actual positions after build
+            print("\n[DEBUG World.build()] Actual positions after build & mj_forward:")
+            agent_main_body_name = self.xml['mujoco']['worldbody']['body'][0].get('@name')
+            if agent_main_body_name:  # Check if agent_main_body_name was determined
+                try:
+                    # data.body().xpos gives the world frame position of the body's origin.
+                    # This should be correct for both free joint and slide/hinge agents as implemented.
+                    actual_agent_pos = self.data.body(agent_main_body_name).xpos.copy()
+                    actual_agent_quat = self.data.body(agent_main_body_name).xquat.copy()
+                    # MuJoCo quaternions are (w, x, y, z)
+                    # Yaw (rotation around Z-axis) can be calculated from quaternion
+                    # Using the formula: atan2(2*(w*z + x*y), 1 - 2*(y^2 + z^2))
+                    w, x, y, z = actual_agent_quat
+                    actual_agent_yaw = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
+                    print(
+                        f"  Agent '{agent_main_body_name}' actual pos (body xpos): {actual_agent_pos}, rot: {actual_agent_yaw}"
+                    )
+                except Exception as e:
+                    print(
+                        f"  Agent '{agent_main_body_name}': Error getting actual xpos/xquat for debug: {e}"
+                    )
+            else:
+                print("  Agent: Main body name not determined for agent position debug print.")
+
+            # For zones and other static geoms, iterate self.geoms which contains model body names as keys
+            # self.geoms is populated from world_config_dict['geoms'] via self.parse()
+            if hasattr(self, 'geoms') and isinstance(self.geoms, dict):
+                for (
+                    model_body_name_key
+                ) in self.geoms.keys():  # These are the names of bodies in the model
+                    try:
+                        # We expect mj_name2id to find the body since model_body_name_key is a key from self.geoms,
+                        # which was used in the main loop of fast_rebuild to update model.body_pos.
+                        body_id_debug = mujoco.mj_name2id(
+                            self.model, mujoco.mjtObj.mjOBJ_BODY, model_body_name_key
+                        )
+                        if body_id_debug != -1:
+                            actual_pos = self.model.body_pos[body_id_debug].copy()
+
+                            print(f"  Geom '{model_body_name_key}' actual pos: {actual_pos}")
+                        else:
+                            # This case should ideally not occur if model_body_name_key is valid from self.geoms
+                            print(
+                                f"  Static Geom body '{model_body_name_key}' (key from self.geoms) NOT FOUND in model by mj_name2id. This is unexpected."
+                            )
+                    except Exception as e:
+                        print(
+                            f"  Error getting actual pos for static geom body '{model_body_name_key}': {e}"
+                        )
+            else:
+                print(
+                    "  self.geoms (dict of static geoms) not found or not a dict in World object for debug print."
+                )
+
+            print("[DEBUG World.build()] End of actual positions print.")
+            # End DEBUG PRINT
+
     def rebuild(self, config=None, state=True, fast_rebuild=False):
         """Build a new sim from a model if the model changed."""
         if state:
@@ -441,6 +500,8 @@ class World:  # pylint: disable=too-many-instance-attributes
             raise RuntimeError(
                 'Fast rebuild called before model/data initialized. Perform a full build first.',
             )
+
+        print_debug = False
 
         # Reset kinematic state to a clean slate
         # model.qpos0 reflects the initial state from the last full XML compilation.
@@ -509,23 +570,48 @@ class World:  # pylint: disable=too-many-instance-attributes
                             and self.model.jnt_bodyid[joint_z_id] == body_id
                             and self.model.jnt_type[joint_z_id] == mujoco.mjtJoint.mjJNT_HINGE
                         ):
-                            self.model.body_pos[body_id] = np.array(
-                                [0.0, 0.0, self._agent.z_height], dtype=np.float64
-                            )
+                            if print_debug:
+                                print(
+                                    f"\n[DEBUG World.fast_rebuild() Point Agent] Target self.agent_xy: {self.agent_xy}, self.agent_rot: {self.agent_rot}"
+                                )
+                                print(
+                                    f"[DEBUG World.fast_rebuild() Point Agent] Agent body_id: {body_id}, target z_height: {self._agent.z_height}"
+                                )
 
+                            # 1. Directly set the agent body's world position and orientation in the model.
+                            self.model.body_pos[body_id] = np.r_[
+                                self.agent_xy, self._agent.z_height
+                            ].astype(np.float64)
+                            self.model.body_quat[body_id] = rot2quat(self.agent_rot).astype(
+                                np.float64
+                            )
+                            if print_debug:
+                                print(
+                                    f"[DEBUG World.fast_rebuild() Point Agent] Set model.body_pos[{body_id}] to: {self.model.body_pos[body_id]}"
+                                )
+                                print(
+                                    f"[DEBUG World.fast_rebuild() Point Agent] Set model.body_quat[{body_id}] to: {self.model.body_quat[body_id]}"
+                                )
+
+                            # 2. Zero out the qpos for the agent's local slide/hinge joints,
+                            #    as their effect is now directly in the body's pose.
                             qpos_adr_x = self.model.jnt_qposadr[joint_x_id]
                             qpos_adr_y = self.model.jnt_qposadr[joint_y_id]
                             qpos_adr_z_rot = self.model.jnt_qposadr[joint_z_id]
 
-                            self.data.qpos[qpos_adr_x] = self.agent_xy[0]
-                            self.data.qpos[qpos_adr_y] = self.agent_xy[1]
-                            self.data.qpos[qpos_adr_z_rot] = (
-                                self.agent_rot
-                            )  # agent_rot is a single angle for Point
+                            self.data.qpos[qpos_adr_x] = 0.0
+                            self.data.qpos[qpos_adr_y] = 0.0
+                            self.data.qpos[qpos_adr_z_rot] = 0.0
+
+                            if print_debug:
+                                print(
+                                    f"[DEBUG World.fast_rebuild() Point Agent] Set data.qpos for x,y,z joints ({qpos_adr_x},{qpos_adr_y},{qpos_adr_z_rot}) to 0.0"
+                                )
 
                             agent_placed_by_fast_rebuild = True
-            except Exception:
-                pass  # Silently proceed if lookup or update fails
+            except Exception as e:
+                print(f"[DEBUG World.fast_rebuild()] Exception during agent placement: {e}")
+                pass
 
         if not agent_placed_by_fast_rebuild:
             warning_message = (
@@ -752,6 +838,65 @@ class World:  # pylint: disable=too-many-instance-attributes
         # Recompute simulation intrinsics from new position and other changes
         mujoco.mj_forward(self.model, self.data)
         self.engine.update(self.model, self.data)
+
+        if print_debug:
+            # DEBUG PRINT: Actual positions after fast_rebuild
+            print(
+                "\n[DEBUG World.fast_rebuild()] Actual positions after fast_rebuild & mj_forward:"
+            )
+            if agent_main_body_name:  # Check if agent_main_body_name was determined
+                try:
+                    # data.body().xpos gives the world frame position of the body's origin.
+                    # This should be correct for both free joint and slide/hinge agents as implemented.
+                    actual_agent_pos = self.data.body(agent_main_body_name).xpos.copy()
+                    actual_agent_quat = self.data.body(agent_main_body_name).xquat.copy()
+                    # MuJoCo quaternions are (w, x, y, z)
+                    # Yaw (rotation around Z-axis) can be calculated from quaternion
+                    # Using the formula: atan2(2*(w*z + x*y), 1 - 2*(y^2 + z^2))
+                    w, x, y, z = actual_agent_quat
+                    actual_agent_yaw = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
+                    print(
+                        f"  Agent '{agent_main_body_name}' actual pos (body xpos): {actual_agent_pos}, rot: {actual_agent_yaw}"
+                    )
+                except Exception as e:
+                    print(
+                        f"  Agent '{agent_main_body_name}': Error getting actual xpos/xquat for debug: {e}"
+                    )
+            else:
+                print("  Agent: Main body name not determined for agent position debug print.")
+
+            # For zones and other static geoms, iterate self.geoms which contains model body names as keys
+            # self.geoms is populated from world_config_dict['geoms'] via self.parse()
+            if hasattr(self, 'geoms') and isinstance(self.geoms, dict):
+                for (
+                    model_body_name_key
+                ) in self.geoms.keys():  # These are the names of bodies in the model
+                    try:
+                        # We expect mj_name2id to find the body since model_body_name_key is a key from self.geoms,
+                        # which was used in the main loop of fast_rebuild to update model.body_pos.
+                        body_id_debug = mujoco.mj_name2id(
+                            self.model, mujoco.mjtObj.mjOBJ_BODY, model_body_name_key
+                        )
+                        if body_id_debug != -1:
+                            actual_pos = self.model.body_pos[body_id_debug].copy()
+
+                            print(f"  Geom '{model_body_name_key}' actual pos: {actual_pos}")
+                        else:
+                            # This case should ideally not occur if model_body_name_key is valid from self.geoms
+                            print(
+                                f"  Static Geom body '{model_body_name_key}' (key from self.geoms) NOT FOUND in model by mj_name2id. This is unexpected."
+                            )
+                    except Exception as e:
+                        print(
+                            f"  Error getting actual pos for static geom body '{model_body_name_key}': {e}"
+                        )
+            else:
+                print(
+                    "  self.geoms (dict of static geoms) not found or not a dict in World object for debug print."
+                )
+
+            print("[DEBUG World.fast_rebuild()] End of actual positions print.")
+            # End DEBUG PRINT
 
     def reset(self, build=True):
         """Reset the world. (sim is accessed through self.sim)"""

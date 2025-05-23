@@ -303,6 +303,35 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
         # Build the underlying physics world
         self.world_info.world_config_dict = self._build_world_config(self.world_info.layout)
 
+        print_debug = False
+        if print_debug:
+            # DEBUG PRINT: Target positions that will be passed to World/rebuild
+            print(
+                "\n[DEBUG Underlying._build()] Target positions from generated world_config_dict:"
+            )
+            # Agent's target XY is from layout, Z from agent object, Rot from layout/config
+            if 'agent' in self.world_info.layout:
+                agent_target_xy_layout = self.world_info.layout['agent']
+                # self.agent should be built by now by self.__init__ calling self._build_agent()
+                # agent_rot comes from self.world_info.world_config_dict which is passed to world.parse()
+                # or directly from self.world_info.layout if your _build_world_config puts it there.
+                # For simplicity, let's assume it's in the world_config_dict or the layout.
+                agent_target_rot_layout = self.world_info.layout.get(
+                    'agent_rot', self.world_info.world_config_dict.get('agent_rot', "Unknown")
+                )
+                print(
+                    f"  Geom 'agent' target: xy={agent_target_xy_layout}, rot={agent_target_rot_layout}"
+                )
+
+            if 'geoms' in self.world_info.world_config_dict:
+                for geom_group_name, geom_group_config in self.world_info.world_config_dict[
+                    'geoms'
+                ].items():
+                    if 'pos' in geom_group_config:
+                        print(f"  Geom '{geom_group_name}' target pos: {geom_group_config['pos']}")
+            print("[DEBUG Underlying._build()] End of target positions print.")
+            # End DEBUG PRINT
+
         if self.world is None:
             self.world = World(self.agent, self._obstacles, self.world_info.world_config_dict)
             self.world.reset(build=False)  # seemingly redundant
