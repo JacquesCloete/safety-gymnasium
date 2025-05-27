@@ -190,6 +190,8 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
         cost = self._cost()
         assert cost['cost_sum'] == 0, f'World has starting cost! {cost}'
+        info.update(cost)
+
         # Reset stateful parts of the environment
         self.first_reset = False  # Built our first world successfully
 
