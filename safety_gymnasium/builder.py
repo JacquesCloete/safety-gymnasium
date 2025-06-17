@@ -180,7 +180,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.truncated = False
         self.steps = 0  # Count of steps taken in this episode
 
-        self.task.reset()
+        self.task.reset(options=options)
         self.task.specific_reset()
         self.task.update_world()  # refresh specific settings
         self.task.agent.reset()

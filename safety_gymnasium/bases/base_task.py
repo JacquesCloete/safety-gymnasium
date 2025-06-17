@@ -151,6 +151,8 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     - :meth:`_ego_xy`: Return the egocentric XY vector to a position from the agent.
     - :meth:`calculate_reward`: Calculate reward, it will be called in every timestep, and it is
       implemented in different task.
+    - :meth:`reset`: Reset the environment, it will be called in every reset.
+    - :meth:`process_config`: Process the configuration of the task, it will be called in every reset.
     - :meth:`specific_reset`: Reset task specific parameters, it will be called in every reset.
     - :meth:`specific_step`: Step task specific parameters, it will be called in every timestep.
     - :meth:`update_world`: Update world, it will be called when ``env.reset()`` or :meth:`goal_achieved` == True.
@@ -597,6 +599,17 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     @abc.abstractmethod
     def calculate_reward(self) -> float:
         """Determine reward depending on the agent and tasks."""
+
+    # pylint: disable-next=arguments-differ
+    def reset(self, options: dict | None = None) -> None:
+        """Reset the environment, it will be called in every reset."""
+        self.process_options(options=options)
+
+        super().reset()  # Call Underlying.reset()
+
+    def process_options(self, options: dict | None = None) -> None:
+        """Process the options provided to the task, it will be called in every reset."""
+        pass
 
     @abc.abstractmethod
     def specific_reset(self) -> None:

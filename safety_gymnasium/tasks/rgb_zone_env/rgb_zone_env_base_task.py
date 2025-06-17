@@ -14,6 +14,7 @@
 # ==============================================================================
 """RGBZoneEnv base task."""
 
+
 import numpy as np
 
 from safety_gymnasium.assets.geoms import ZoneEnvWalls
@@ -42,19 +43,31 @@ class RGBZoneEnvBaseTask(BaseTask):
             self.num_steps = 100  # lower episode length (to compensate for lower control frequency)
             self.sim_conf.frameskip_binom_n = 100  # lower control frequency
 
-    def reset(self):
+    def process_options(self, options: dict | None = None) -> None:
         """
-        Reset the task. This is called by the Builder.
         Randomize colors of RGBZones before the world is built.
+        Uses options to potentially override RGB bounds.
+        This method is called by BaseTask.reset() before super().reset() (which calls _build).
         """
-        # Randomize colors of all Zone objects before building the world
-        # self._geoms is a dict mapping name to geom object, populated by _add_geoms()
+        rgb_zones_params = None
+        if options and 'rgb_zones_params' in options:
+            rgb_zones_params = options['rgb_zones_params']
+
         for geom_obj in self._geoms.values():
             if isinstance(geom_obj, RGBZones):
-                rgb_seed = self.random_generator.random_generator.randint(np.iinfo(np.int32).max)
-                geom_obj.randomize_color(seed=rgb_seed)
+                new_lower = None
+                new_upper = None
+                if rgb_zones_params and geom_obj.id in rgb_zones_params:
+                    params = rgb_zones_params[geom_obj.id]
+                    if 'rgb_lower_bounds' in params:
+                        new_lower = params['rgb_lower_bounds']
+                    if 'rgb_lower_bounds' in params:
+                        new_upper = params['rgb_upper_bounds']
 
-        super().reset()  # Calls Underlying.reset(), which calls _build(), then _build_world_config()
+                rgb_seed = self.random_generator.random_generator.randint(np.iinfo(np.int32).max)
+                geom_obj.randomize_color(
+                    seed=rgb_seed, rgb_lower_bounds=new_lower, rgb_upper_bounds=new_upper
+                )
 
     def get_task_specific_info(self) -> dict:
         info = {}
@@ -71,18 +84,18 @@ class RGBZoneEnvBaseTask(BaseTask):
             info['agent']['yaw'] = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
         return info
 
-    def calculate_reward(self):
-        return 0
+    def calculate_reward(self) -> float:
+        return 0.0
 
-    def specific_reset(self):
+    def specific_reset(self) -> None:
         pass
 
-    def specific_step(self):
+    def specific_step(self) -> None:
         pass
 
-    def update_world(self):
+    def update_world(self) -> None:
         pass
 
     @property
-    def goal_achieved(self):
+    def goal_achieved(self) -> bool:
         return False
