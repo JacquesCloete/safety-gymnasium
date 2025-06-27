@@ -25,7 +25,7 @@ from safety_gymnasium.bases.base_task import BaseTask
 class RGBZoneEnvBaseTask(BaseTask):
     """Base task for RGBZoneEnv tasks."""
 
-    def __init__(self, config, zone_size: float, walls=True, low_freq=True) -> None:
+    def __init__(self, config, zone_size: float, walls=True, low_freq=False) -> None:
         super().__init__(config=config)
         self.zone_size = zone_size
         self.placements_conf.extents = [-2.5, -2.5, 2.5, 2.5]
@@ -39,8 +39,6 @@ class RGBZoneEnvBaseTask(BaseTask):
         if walls:
             self._add_geoms(ZoneEnvWalls())
         if low_freq:
-            # To match the standard setup, we need self.num_steps * self.sim_conf.frameskip_binom_n = 10000
-            self.num_steps = 100  # lower episode length (to compensate for lower control frequency)
             self.sim_conf.frameskip_binom_n = 100  # lower control frequency
 
     def process_options(self, options: dict | None = None) -> None:

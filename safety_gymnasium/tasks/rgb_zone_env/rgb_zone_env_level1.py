@@ -19,7 +19,7 @@ from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_base_task import RGBZoneEn
 
 
 class RGBZoneEnvLevel1(RGBZoneEnvBaseTask):
-    """Two zones."""
+    """Two zone colors, one zone each."""
 
     def __init__(self, config) -> None:
         super().__init__(config=config, zone_size=0.4)

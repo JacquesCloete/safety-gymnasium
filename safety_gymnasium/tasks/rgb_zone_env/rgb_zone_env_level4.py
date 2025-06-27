@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""RGBZoneEnv level 3."""
+"""RGBZoneEnv level 4."""
 
 from safety_gymnasium.assets.geoms import RGBZones
 from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_base_task import RGBZoneEnvBaseTask
 
 
-class RGBZoneEnvLevel3(RGBZoneEnvBaseTask):
-    """Four zone colors, one zone each."""
+class RGBZoneEnvLevel4(RGBZoneEnvBaseTask):
+    """Four zone colors, two zones each."""
 
     def __init__(self, config) -> None:
         super().__init__(config=config, zone_size=0.4)
@@ -28,28 +28,28 @@ class RGBZoneEnvLevel3(RGBZoneEnvBaseTask):
             RGBZones(
                 zones_id=0,
                 size=self.zone_size,
-                num=1,
+                num=2,
                 rgb_lower_bounds=[0, 0, 0],
                 rgb_upper_bounds=[1, 1, 1],
             ),
             RGBZones(
                 zones_id=1,
                 size=self.zone_size,
-                num=1,
+                num=2,
                 rgb_lower_bounds=[0, 0, 0],
                 rgb_upper_bounds=[1, 1, 1],
             ),
             RGBZones(
                 zones_id=2,
                 size=self.zone_size,
-                num=1,
+                num=2,
                 rgb_lower_bounds=[0, 0, 0],
                 rgb_upper_bounds=[1, 1, 1],
             ),
             RGBZones(
                 zones_id=3,
                 size=self.zone_size,
-                num=1,
+                num=2,
                 rgb_lower_bounds=[0, 0, 0],
                 rgb_upper_bounds=[1, 1, 1],
             ),

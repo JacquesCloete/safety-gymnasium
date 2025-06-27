@@ -69,6 +69,7 @@ from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_level0 import RGBZoneEnvLe
 from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_level1 import RGBZoneEnvLevel1
 from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_level2 import RGBZoneEnvLevel2
 from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_level3 import RGBZoneEnvLevel3
+from safety_gymnasium.tasks.rgb_zone_env.rgb_zone_env_level4 import RGBZoneEnvLevel4
 from safety_gymnasium.tasks.safe_multi_agent.tasks.multi_goal.multi_goal_level0 import (
     MultiGoalLevel0,
 )
