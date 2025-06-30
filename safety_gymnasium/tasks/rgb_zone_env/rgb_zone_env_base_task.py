@@ -29,7 +29,7 @@ class RGBZoneEnvBaseTask(BaseTask):
         super().__init__(config=config)
         self.zone_size = zone_size
         self.placements_conf.extents = [-2.5, -2.5, 2.5, 2.5]
-        self.lidar_conf.num_bins = 16
+        self.lidar_conf.num_bins = 32
         self.lidar_conf.max_dist = None
         self.lidar_conf.exp_gain = 0.5
         self.lidar_conf.alias = True
