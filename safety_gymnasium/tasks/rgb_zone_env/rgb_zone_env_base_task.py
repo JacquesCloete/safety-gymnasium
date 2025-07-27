@@ -59,7 +59,7 @@ class RGBZoneEnvBaseTask(BaseTask):
                     params = rgb_zones_params[geom_obj.id]
                     if 'rgb_lower_bounds' in params:
                         new_lower = params['rgb_lower_bounds']
-                    if 'rgb_lower_bounds' in params:
+                    if 'rgb_upper_bounds' in params:
                         new_upper = params['rgb_upper_bounds']
 
                 rgb_seed = self.random_generator.random_generator.randint(np.iinfo(np.int32).max)
