@@ -168,6 +168,7 @@ rgb_zone_env_tasks = {
     'RGBZoneEnv2': {},
     'RGBZoneEnv3': {},
     'RGBZoneEnv4': {},
+    'RGBZoneEnv5': {},
 }
 __combine(rgb_zone_env_tasks, robots, max_episode_steps=None)
 
